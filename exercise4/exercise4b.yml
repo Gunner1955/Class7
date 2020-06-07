@@ -1,0 +1,31 @@
+---
+- name: Exercise 4B
+  hosts: nxos
+  gather_facts: false
+  vars:
+    command: show version
+  collections:
+   - clay584.genie
+
+  tasks: 
+    - name: Excuting commmand
+      nxos_command:
+        commands: "{{ command }}"
+      register: output
+
+    - name: Display output as a string
+      debug:
+        var: output
+
+    - name: Use Genie to convert to structured data
+      set_fact:
+        output_struct: "{{ output.stdout[0] | clay584.genie.parse_genie(command=command, os=ansible_network_os) }}"
+
+    - name: Print software version
+      debug:
+        msg:
+          - "-----------------"
+          - "{{ inventory_hostname }}:"
+          - "{{ output_struct.platform.software.system_version }}"
+          - "-----------------"
+ 
